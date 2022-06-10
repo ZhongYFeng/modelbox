@@ -282,13 +282,19 @@ std::shared_ptr<FlowUnitEvent> FlowUnitDataContext::Event() {
   return user_event_;
 }
 
-void FlowUnitDataContext::SetPrivate(const std::string &key,
-                                     std::shared_ptr<void> private_content) {
+void FlowUnitDataContext::SetPrivate(const std::string &key,  std::shared_ptr<void> private_content, std::size_t type_id) {
   auto iter = private_map_.find(key);
   if (iter == private_map_.end()) {
     private_map_.emplace(key, private_content);
   } else {
     private_map_[key] = private_content;
+  }
+
+  auto iter_type = private_map_type_.find(key);
+  if (iter_type == private_map_type_.end()) {
+    private_map_type_.emplace(key, type_id);
+  } else {
+    private_map_type_[key] = type_id;
   }
 }
 
@@ -298,6 +304,14 @@ std::shared_ptr<void> FlowUnitDataContext::GetPrivate(const std::string &key) {
     return nullptr;
   }
   return private_map_[key];
+}
+
+std::size_t FlowUnitDataContext::GetPrivateType(const std::string &key) {
+  auto iter = private_map_type_.find(key);
+  if (iter == private_map_type_.end()) {
+    return 0;
+  }
+  return private_map_type_[key];
 }
 
 /**
@@ -967,12 +981,17 @@ void ExecutorDataContext::SendEvent(std::shared_ptr<FlowUnitEvent> event) {
 }
 
 void ExecutorDataContext::SetPrivate(const std::string &key,
-                                     std::shared_ptr<void> private_content) {
-  origin_ctx_->SetPrivate(key, private_content);
+                                     std::shared_ptr<void> private_content,
+                                     std::size_t type_id) {
+  origin_ctx_->SetPrivate(key, private_content, type_id);
 };
 
 std::shared_ptr<void> ExecutorDataContext::GetPrivate(const std::string &key) {
   return origin_ctx_->GetPrivate(key);
+};
+
+std::size_t ExecutorDataContext::GetPrivateType(const std::string &key) {
+  return origin_ctx_->GetPrivateType(key);
 };
 
 const std::shared_ptr<DataMeta> ExecutorDataContext::GetInputMeta(
