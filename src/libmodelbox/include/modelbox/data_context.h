@@ -113,9 +113,11 @@ class DataContext {
   virtual void SendEvent(std::shared_ptr<FlowUnitEvent> event) = 0;
 
   virtual void SetPrivate(const std::string &key,
-                          std::shared_ptr<void> private_content) = 0;
+                          std::shared_ptr<void> private_content, std::size_t type_id=0) = 0;
 
   virtual std::shared_ptr<void> GetPrivate(const std::string &key) = 0;
+  
+  virtual std::size_t GetPrivateType(const std::string &key) = 0;
 
   virtual const std::shared_ptr<DataMeta> GetInputMeta(
       const std::string &port) = 0;
@@ -158,10 +160,11 @@ class FlowUnitDataContext : public DataContext, public SessionStateListener {
 
   bool HasError() override;
 
-  void SetPrivate(const std::string &key,
-                  std::shared_ptr<void> private_content) override;
+  void SetPrivate(const std::string &key, std::shared_ptr<void> private_content, std::size_t type_id=0) override;
 
   std::shared_ptr<void> GetPrivate(const std::string &key) override;
+
+  std::size_t GetPrivateType(const std::string &key) override;
 
   void SendEvent(std::shared_ptr<FlowUnitEvent> event) override;
 
@@ -352,6 +355,7 @@ class FlowUnitDataContext : public DataContext, public SessionStateListener {
   std::unordered_map<std::string, std::shared_ptr<DataMeta>> output_port_meta_;
 
   std::unordered_map<std::string, std::shared_ptr<void>> private_map_;
+  std::unordered_map<std::string, std::size_t> private_map_type_;
 
   std::shared_ptr<FlowUnitEvent> user_event_;
   PortDataMap cur_event_input_data_;  // record for event
@@ -589,9 +593,11 @@ class ExecutorDataContext : public DataContext {
   virtual void SendEvent(std::shared_ptr<FlowUnitEvent> event) override;
 
   virtual void SetPrivate(const std::string &key,
-                          std::shared_ptr<void> private_content) override;
+                          std::shared_ptr<void> private_content, std::size_t type_id=0) override;
 
   virtual std::shared_ptr<void> GetPrivate(const std::string &key) override;
+
+  virtual std::size_t GetPrivateType(const std::string &key) override;
 
   virtual const std::shared_ptr<DataMeta> GetInputMeta(
       const std::string &port) override;
